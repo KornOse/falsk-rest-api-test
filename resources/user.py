@@ -1,5 +1,7 @@
 import requests
 import os
+
+from flask import current_app
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from passlib.hash import pbkdf2_sha256
@@ -12,24 +14,9 @@ from schemas import UserSchema, UserRegisterSchema
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_
 
+from tasks import send_user_registration_email
+
 blp = Blueprint("users", __name__, description="Operations on users")
-
-def send_simple_message(to, subject, body):
-  domain = os.getenv("MAILGUN_DOMAIN")
-
-  return requests.post(
-    f"https://api.mailgun.net/v3/{domain}/messages",
-    auth=("api", os.getenv('MAILGUN_API_KEY')),
-    data={
-        "from": f"Mailgun Sandbox <postmaster@{domain}>",
-        "to": [to],
-        "subject": subject,
-        "text": body
-        # "to": "Kornel Oselsky <kornel.oselsky9@gmail.com>",
-        # "subject": "Hello Kornel Oselsky",
-        # "text": "Congratulations Kornel Oselsky, you just sent an email with Mailgun! You are truly awesome!"
-      }
-    )
 
 @blp.route("/register")
 class UserRegister(MethodView):
@@ -55,11 +42,7 @@ class UserRegister(MethodView):
     except IntegrityError:
       abort(409, message="A user with that username already exists.")
 
-    send_simple_message(
-      to=user.email,
-      subject="succesfully signed in",
-      body=f"Cauu {user.username}, podarilo sa ti to brate"
-    )
+    current_app.queue.enqueue(send_user_registration_email, user.email, user.username)
     
     return {"message": "User created successfully."}, 201
 
