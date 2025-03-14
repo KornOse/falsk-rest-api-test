@@ -23,7 +23,7 @@ def send_simple_message(to, subject, body, html):
         "to": [to],
         "subject": subject,
         "text": body,
-        "html": html
+        # "html": html,
       }
     )
 
@@ -32,5 +32,5 @@ def send_user_registration_email(email, username):
     email,
     "Successfully signed up",
     f"Hi {username}, you have successfully signed up to the Stores REST API.",
-    render_template("email/action.html", username=username)
+    # render_template("email/action.html", username=username),
   )
