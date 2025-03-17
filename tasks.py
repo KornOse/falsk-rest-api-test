@@ -5,11 +5,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# template_loader = jinja2.FileSystemLoader("templates")
-# template_env = jinja2.Environment(loader=template_loader)
+template_loader = jinja2.FileSystemLoader("templates")
+template_env = jinja2.Environment(loader=template_loader)
 
-# def render_template(template_filename, **context):
-#   return template_env.get_template(template_filename).render(**context)
+def render_template(template_filename, **context):
+  return template_env.get_template(template_filename).render(**context)
 
 def send_simple_message(to, subject, body, html):
   domain = os.getenv("MAILGUN_DOMAIN")
@@ -23,7 +23,7 @@ def send_simple_message(to, subject, body, html):
         "to": [to],
         "subject": subject,
         "text": body,
-        # "html": html,
+        "html": html,
       }
     )
 
@@ -32,5 +32,5 @@ def send_user_registration_email(email, username):
     email,
     "Successfully signed up",
     f"Hi {username}, you have successfully signed up to the Stores REST API.",
-    # render_template("email/action.html", username=username),
+    render_template("email/action.html", username=username),
   )
